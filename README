@@ -1,0 +1,9 @@
+
+
+[Dependencies]
+easy_install tweepy
+git clone git://github.com/bitly/bitly-api-python.git
+easy_install .
+
+
+
