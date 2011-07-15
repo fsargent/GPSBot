@@ -3,6 +3,7 @@ import sys
 import tweepy
 import bitly_api
 import time
+import ConfigParser
 
 # GPSbot by Felix Sargent (felix.sargent@gmail.com)
 #
@@ -14,26 +15,33 @@ import time
 class Gpsbot(object):
   
   def __init__(self):
-    CONSUMER_KEY = 'b8tIIaVNf5uet7OFkqaf8w'
-    CONSUMER_SECRET = '2bAcRYLQWp00At3HA1Knzm2JS3IXTs2fonlImGr0X8'
-    ACCESS_KEY = '151351658-Vs6EQ2mXF2X3xipBxMA9X8LFyKo1BMmwgKCy7Lc2'
-    ACCESS_SECRET = 'OnmccOtTZin91wrRaJk3Oe75Sw8gm7FFSdte96l92s'
+    config = ConfigParser.ConfigParser()
+    config.read('gpsbot.cfg')
+    CONSUMER_KEY = config.get('twitterapi','consumer_key')
+    CONSUMER_SECRET= config.get('twitterapi','consumer_secret')
+    ACCESS_KEY = config.get('twitterapi','access_key')
+    ACCESS_SECRET = config.get('twitterapi','access_secret')
+    BITLY_USERNAME = config.get('bitlyapi','bitly_username')
+    BITLY_KEY = config.get('bitlyapi','bitly_key')
     
     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
     self.api = tweepy.API(auth)
-    self.bitly = bitly_api.Connection("antagonist77", "R_d919ec73564a5b6f513c4f2d9fec0175")
+    self.bitly = bitly_api.Connection(BITLY_USERNAME,BITLY_KEY)
     self.oldmentions = None
   
   
   def getUpdate(self):
     """Get gpsbot status"""
-    self.mentions =  self.api.mentions()
+    try:
+      self.mentions =  self.api.mentions()
+    except:
+      print "Could not retrieve mentions. Check the gpsbot.cfg for the right API keys."
 
   def is_valid(self):
-    if self.mentions[0].geo != None:
-      return 1
-    else: return 0
+     mention = self.mentions[0]
+     if self.mentions[0].geo != None:
+        return 1
 
   def print_latest_tweet(self):
     self.getUpdate()
@@ -47,7 +55,10 @@ class Gpsbot(object):
 
   def makeMessage(self):
     """Take the latest update and turn it into a response string"""
-    mention = self.mentions[0]
+    try:
+      mention = self.mentions[0]
+    except AttributeError:
+      getUpdate()
     #grab the coordinates
     lat =  mention.geo['coordinates'][0]
     lng =  mention.geo['coordinates'][1]
@@ -109,7 +120,8 @@ class Gpsbot(object):
         elif choice == "2":
           if self.is_valid == 1:
             self.makeMessage()
-          else: print "No Geo Coordinates:\n\t", self.print_latest_tweet()
+          elif self.is_valid == 2: print "No Geo Coordinates:\n\t", self.print_latest_tweet()
+          else: print "Could not grab tweets. Check the API keys in the gpsbot.cfg"
 
         elif choice == "3":
           try:
@@ -118,13 +130,10 @@ class Gpsbot(object):
           except:
             print "No response yet!"
 
-        elif choice == "4":
+        elif choice == "4":   # Daemonize
           self.getUpdate()
           self.oldmentions = self.mentions
           self.daemonize()
-
-        elif choice == "5":
-          self.print_latest_tweet()
 
         #Unknown
         else:

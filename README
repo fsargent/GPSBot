@@ -1,9 +1,18 @@
+GPSBOT by Felix Sargent (felix.sargent@gmail.com)
+
+GPSBot is designed to be used with twitter
+when you want to let someone know where you are
+just "@gpsbot @(friend) I'm here!"
+and gpsbot will send them a google maps link to your location
+
+GPSBot is my inital python project. 
 
 
-[Dependencies]
+[Dependenent modules]
 easy_install tweepy
 git clone git://github.com/bitly/bitly-api-python.git
-easy_install .
+easy_install ./bitly-api/
 
+open up gpsbot.cfg and put in your oauth credentials for twitter and bitly.
 
 
